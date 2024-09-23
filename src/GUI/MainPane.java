@@ -1,15 +1,21 @@
 package GUI;
 
+import Circuit.Graph;
+import Circuit.Solver;
 import Elements.*;
 import Main.MainFrame;
 
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 public class MainPane extends JPanel {
 
     public static final int NUMBER_OF_NODES = 120;
@@ -17,11 +23,16 @@ public class MainPane extends JPanel {
     private List<Element> elements;
     private final Node[] nodes;
 
+    public Graph circuitGraph;
+
+    public static int nodeCount = 1;
+
     private Node firstNode, secondNode = null;
 
     public MainPane() {
         this.elements = new ArrayList<>();
         this.nodes = new Node[NUMBER_OF_NODES];
+        circuitGraph = new Graph(elements);
         setBackground(new Color(0x313030));
         int nodeStartX = 125;
         int nodeStartY = 170;
@@ -30,16 +41,15 @@ public class MainPane extends JPanel {
                 nodeStartY+=60;
                 nodeStartX=125;
             }
-            nodes[i] = new Node(new Point(nodeStartX, nodeStartY), i);
+            nodes[i] = new Node(new Point(nodeStartX, nodeStartY));
             nodeStartX+=52;
 
         }
+        setFocusable(true);
+        requestFocusInWindow();
+        keyListeners();
         mouseListeners();
     }
-
-
-
-
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -47,6 +57,26 @@ public class MainPane extends JPanel {
         for(Element element : elements) {
             element.drawElement(g);
         }
+    }
+
+    private void keyListeners() {
+        this.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                super.keyReleased(e);
+                if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    for(Map.Entry<Node, List<Node>> entry : circuitGraph.getAdjacencyList().entrySet()) {
+                        if(entry.getKey().isJunction()) {
+                            circuitGraph.numberOfEquations++;
+                            circuitGraph.getJunctions().add(entry.getKey());
+                            circuitGraph.findBranch(entry.getKey());
+                        }
+                    }
+                    Solver.test(circuitGraph.getBranches(), circuitGraph);
+                }
+                //circuitGraph.printBranches();
+            }
+        });
     }
 
 
@@ -65,15 +95,24 @@ public class MainPane extends JPanel {
                         }
 
                         try {
+                            if(firstNode.getId() == -1) firstNode.setId(nodeCount++);
+                            if(secondNode.getId() == -1) secondNode.setId(nodeCount++);
                             if(MainFrame.selectedElement == ElementType.WIRE) {
                                 elements.add(new Wire(firstNode,secondNode));
                             } else if(MainFrame.selectedElement == ElementType.RESISTOR) {
                                 elements.add(new Resistor(firstNode,secondNode,Double.parseDouble(input)));
+                                elements.add(new Resistor(secondNode,firstNode,Double.parseDouble(input)));
+
                             } else if(MainFrame.selectedElement == ElementType.VOLTAGE_SOURCE) {
-                                elements.add(new VoltageSource(firstNode,secondNode,Double.parseDouble(input)));
+                                elements.add(new VoltageSource(firstNode,secondNode,-Double.parseDouble(input)));
+                                elements.add(new VoltageSource(secondNode,firstNode,Double.parseDouble(input)));
                             } else if(MainFrame.selectedElement == ElementType.CURRENT_SOURCE) {
-                                elements.add(new CurrentSource(firstNode,secondNode,Double.parseDouble(input)));
+                                elements.add(new CurrentSource(firstNode,secondNode,-Double.parseDouble(input)));
+                                elements.add(new CurrentSource(secondNode,firstNode,Double.parseDouble(input)));
                             }
+                            circuitGraph.addEdge(firstNode, secondNode);
+                            //circuitGraph.printAdjList();
+
                         } catch (Exception exc) {
                             System.out.println("Value is a number...");
                         }

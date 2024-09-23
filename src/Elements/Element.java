@@ -9,6 +9,7 @@ public class Element {
     private double value;
     private ElementType type;
 
+
     public Element(Node start, Node end, double value, ElementType type) {
         this.start = start;
         this.end = end;
@@ -30,6 +31,18 @@ public class Element {
 
     public ElementType getType() {
         return type;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+
+    public void setStart(Node start) {
+        this.start = start;
+    }
+
+    public void setEnd(Node end) {
+        this.end = end;
     }
 
     @Override

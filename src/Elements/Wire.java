@@ -11,7 +11,6 @@ public class Wire extends Element {
     @Override
     public void drawElement(Graphics g) {
         super.drawElement(g);
-        System.out.println("xd");
         Graphics2D graphics2D = (Graphics2D) g;
         graphics2D.setStroke(new BasicStroke(3));
         g.setColor(new Color(0x8A8A8A));
