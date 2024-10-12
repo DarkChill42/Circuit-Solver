@@ -1,7 +1,9 @@
 package Circuit;
 
 import Elements.Element;
+import Elements.ElementType;
 import Elements.Node;
+import Elements.Wire;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +27,7 @@ public class Graph {
         this.branches = new ArrayList<>();
         this.junctions = new ArrayList<>();
         this.elements = elements;
-        adjacencyList = new HashMap<>();
+        this.adjacencyList = new HashMap<>();
     }
 
     public void addEdge(Node start, Node end) {
@@ -57,7 +59,6 @@ public class Graph {
 
         findBranchRec(startNode, visited);
     }
-
     public void findBranchRec(Node startNode, List<Node> visited) {
         for(Node n : adjacencyList.get(startNode)) {
             if(!visited.contains(n)) {
@@ -73,8 +74,15 @@ public class Graph {
                         branch.getElements().add(element);
                         branch.increaseCount(element.getType());
                     });
+                    for(Element element : branch.getElements()) {
+                        if(element.getType() == ElementType.CURRENT_SOURCE) {
+                            branch.setResistance(0.0);
+                            break;
+                        } else if(element.getType() == ElementType.RESISTOR) {
+                            branch.setResistance(branch.getResistance() + element.getValue());
+                        }
+                    }
                     branches.add(branch);
-
                     toAdd.clear();
                 }
             }
@@ -112,11 +120,6 @@ public class Graph {
                 return element;
             }
         }
-        for(Element element : elements) {
-            if(element.getStart().equals(end) && element.getEnd().equals(start)) {
-                return element;
-            }
-        }
         return null;
     }
 
@@ -125,6 +128,15 @@ public class Graph {
         return "Graph{" +
                 "adjacencyList=" + adjacencyList +
                 '}';
+    }
+
+    //TODO: find a wire loop and stop the program.
+    public boolean hasWireLoop() {
+        for(Branch branch : branches) {
+            //FML... :(
+        }
+
+        return false;
     }
 
     public void printAdjList() {

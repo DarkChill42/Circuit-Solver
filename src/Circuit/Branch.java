@@ -11,12 +11,33 @@ public class Branch {
     private Node start,end;
     private List<Element> elements;
 
+    private double resistance;
     private int resistorCount,wireCount,voltageCount,currentCount;
+
+    private double current;
 
 
     public Branch() {
         this.elements = new ArrayList<>();
         resistorCount = wireCount = voltageCount = currentCount = 0;
+        this.resistance = 0.0;
+        this.current = 0.0;
+    }
+
+    public double getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(double current) {
+        this.current = current;
+    }
+
+    public double getResistance() {
+        return resistance;
+    }
+
+    public void setResistance(double resistance) {
+        this.resistance = resistance;
     }
 
     public Node getStart() {
