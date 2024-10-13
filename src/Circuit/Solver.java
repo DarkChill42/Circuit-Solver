@@ -110,11 +110,7 @@ public class Solver {
                 double tempAdd = 0.0;
                 if(branch.getStart().getId() == start.getId()) {
                     if(containsElement(branch, ElementType.CURRENT_SOURCE)) {
-                        for(Element element : branch.getElements()) {
-                            if(element.getType() == ElementType.RESISTOR) {
-                                tempAdd+=element.getValue();
-                            }
-                        }
+                        tempAdd = branch.getResistance();
                     }
                 }
                 result+=(tempAdd == 0.0 ? 0.0 : 1.0 / tempAdd);
@@ -123,13 +119,8 @@ public class Solver {
         } else {
             for(Branch branch : branches) {
                 if(branch.getStart().getId() == start.getId() && branch.getEnd().getId() == end.getId()) {
-                    if(containsElement(branch, ElementType.CURRENT_SOURCE)) {
-                        double tempAdd = 0.0;
-                        for(Element element : branch.getElements()) {
-                            if(element.getType() == ElementType.RESISTOR && !branch.getEnd().isGrounded()) {
-                                tempAdd+=element.getValue();
-                            }
-                        }
+                    if(containsElement(branch, ElementType.CURRENT_SOURCE) && !branch.getEnd().isGrounded()) {
+                        double tempAdd = branch.getResistance();
                         result += (tempAdd == 0.0 ? 0.0 : 1.0 / tempAdd);
                     }
                 }
@@ -142,27 +133,15 @@ public class Solver {
         double result = 0.0;
         for(Branch branch : branches) {
             if(branch.getStart().getId() == node.getId()) {
-                if(branch.getEnd().getPotential() != Double.MAX_VALUE) {
-                    double resistance = 0.0;
-                    for(Element element : branch.getElements()) {
-                        if(element.getType() == ElementType.CURRENT_SOURCE) {
-                            resistance = 0.0;
-                            break;
-                        }
-                        if(element.getType() == ElementType.RESISTOR) resistance+=element.getValue();
-                    }
+                if(branch.getEnd().getPotential() != Double.MAX_VALUE && containsElement(branch, ElementType.CURRENT_SOURCE)) {
+                    double resistance = branch.getResistance();
                     result+= (resistance == 0.0 ? 0.0 : 1.0/resistance)*branch.getEnd().getPotential();
                 }
                 for(Element element : branch.getElements()) {
                     if(element.getType() == ElementType.CURRENT_SOURCE) {
                         result+= element.getValue();
                     } else if(element.getType() == ElementType.VOLTAGE_SOURCE) {
-                        double resistance = 0.0;
-                        for(Element el : branch.getElements()) {
-                            if(el.getType() == ElementType.RESISTOR) {
-                                resistance+=el.getValue();
-                            }
-                        }
+                        double resistance = branch.getResistance();
                         result+= resistance == 0.0 ? 0.0 : element.getValue() / resistance;
                     }
                 }
